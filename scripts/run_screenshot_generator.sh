@@ -45,7 +45,7 @@ mkdir -p "$LOGS_DIR"
     -DLVGL_ROOT="$LVGL_ROOT_CANDIDATE" \
     -DDISPLAY_WIDTH="$DISPLAY_WIDTH" \
     -DDISPLAY_HEIGHT="$DISPLAY_HEIGHT"
-  cmake --build tools/apps/screenshot_generator/build -j"$(nproc)"
+  cmake --build tools/apps/screenshot_generator/build -j"$(getconf _NPROCESSORS_ONLN)"
   ./tools/apps/screenshot_generator/build/screenshot_gen
 
   echo "Screenshot generation complete."

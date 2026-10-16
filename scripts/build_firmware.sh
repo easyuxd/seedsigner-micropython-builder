@@ -174,7 +174,7 @@ else
 fi
 
 {
-  make -C "$MP_DIR/mpy-cross" USER_C_MODULES= -j"$(nproc)"
+  make -C "$MP_DIR/mpy-cross" USER_C_MODULES= -j"$(getconf _NPROCESSORS_ONLN)"
   rm -rf "$BUILD_DIR"
 
   # Initialize the MicroPython submodules this board needs (e.g.
@@ -211,7 +211,7 @@ fi
     export MICROPY_DISABLE_NETWORK=1
   fi
 
-  make -C "$MP_DIR/ports/esp32" -j"$(nproc)" \
+  make -C "$MP_DIR/ports/esp32" -j"$(getconf _NPROCESSORS_ONLN)" \
     BOARD="$BOARD" \
     ${BOARD_VARIANT:+BOARD_VARIANT="$BOARD_VARIANT"} \
     BUILD="$BUILD_DIR" \

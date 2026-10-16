@@ -28,6 +28,9 @@ echo "Pinned commit:  $PINNED_SHA"
 echo "Current HEAD:   $CURRENT_SHA"
 
 # Reset working tree: discard all changes and untracked files (except lib/ submodules).
+# Unstage first: `checkout -- .` alone leaves staged additions (e.g. from an
+# interrupted apply_micropython_mods.sh) in the index.
+git -C "$MP_DIR" reset -q
 git -C "$MP_DIR" checkout -- .
 git -C "$MP_DIR" clean -fd --exclude=lib/
 
