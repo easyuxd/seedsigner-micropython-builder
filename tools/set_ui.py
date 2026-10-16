@@ -9,7 +9,8 @@ at power-on (display_manager init) and the launcher reads in /main.py.
     python3 tools/set_ui.py status            # print the current choice
     python3 tools/set_ui.py redesign --port /dev/cu.usbmodem1101
 
-The port is found automatically (the boards' USB-serial chip, 1a86:55d3) unless given.
+The port is found automatically on either USB-C port (UART 1a86:55d3, or the P4's native
+USB 303a:4001) unless given.
 Needs pyserial, which esptool already installs (run it from the esptool venv).
 """
 import argparse
@@ -21,11 +22,13 @@ from serial.tools import list_ports
 from mpy_repl import exec_code
 
 UI_VALUES = {"classic": 0, "redesign": 1}
-BOARD_USB_ID = (0x1A86, 0x55D3)  # WCH CH343 on the Waveshare P4 boards
+# The REPL answers on either USB-C port: the UART port (WCH CH343 USB-serial chip) or
+# the P4's native USB (MicroPython's own USB serial, Espressif VID 0x303A).
+BOARD_USB_IDS = [(0x1A86, 0x55D3), (0x303A, 0x4001)]
 
 
 def find_port():
-    ports = [p.device for p in list_ports.comports() if (p.vid, p.pid) == BOARD_USB_ID]
+    ports = [p.device for p in list_ports.comports() if (p.vid, p.pid) in BOARD_USB_IDS]
     # macOS lists both /dev/cu.* and /dev/tty.*; cu is the one to open.
     ports.sort(key=lambda d: (not d.startswith("/dev/cu."), d))
     if not ports:
