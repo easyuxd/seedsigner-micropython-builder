@@ -14,6 +14,12 @@ extern "C" {
 typedef void (*display_manager_ui_callback_t)(void *ctx);
 
 void init(void);
+
+/* easyuxd Redesign prototype. dm_ui_redesign(): this boot selected the Redesign
+ * (NVS "seedsigner"/"ui" = 1, portrait). dm_redesign_start(): show it; returns an
+ * error string or NULL. */
+bool dm_ui_redesign(void);
+const char *dm_redesign_start(void);
 const char *run_screen(display_manager_ui_callback_t cb, void *ctx);
 
 /* Push the next animated-QR frame into a live qr_display_screen, under the LVGL-port

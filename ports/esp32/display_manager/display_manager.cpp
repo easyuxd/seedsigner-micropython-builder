@@ -31,6 +31,8 @@
 #include "locale_picker.h"    // locale_picker_set_image_provider (endonym images)
 #include "overlay_manager.h"  // overlay_manager_init / _set_screensaver_timeout
 #include "seedsigner.h"       // opening_splash_screen (boot_logo_only) for the C-boot logo
+#include "nvs.h"              // the boot-time UI choice (dm_ui_redesign)
+#include "redesign/redesign.h"  // easyuxd Redesign prototype (dm_redesign_start)
 
 static const char *TAG = "display_manager";
 
@@ -125,11 +127,33 @@ static void sd_power_on(void) {}
 static lv_display_t *lvgl_disp = NULL;
 static lv_indev_t *lvgl_touch_indev = NULL;
 static bool initialized = false;
+static bool s_ui_redesign = false;
+
+/* Which UI this boot runs: NVS "seedsigner"/"ui" = 1 selects the easyuxd Redesign
+ * prototype (portrait), anything else (or unset) the Classic app (landscape). Read
+ * once here because orientation is fixed at board_init(); the launcher (/main.py)
+ * reads the same key, and tools/set_ui.py writes it. NVS is already initialized by
+ * boardctrl_startup() at this point. */
+static bool read_ui_redesign(void)
+{
+    nvs_handle_t h;
+    int32_t ui = 0;
+    if (nvs_open("seedsigner", NVS_READONLY, &h) == ESP_OK) {
+        nvs_get_i32(h, "ui", &ui);
+        nvs_close(h);
+    }
+    return ui == 1;
+}
 
 extern "C" void init(void)
 {
     if (initialized) return;
-    board_app_config_t cfg = { .landscape = true };
+    s_ui_redesign = read_ui_redesign();
+    /* Classic renders landscape; the Redesign is designed portrait, which is also the
+     * 4.3's native panel orientation (no per-frame CPU rotation). */
+    board_app_config_t cfg = { .landscape = !s_ui_redesign };
+    ESP_LOGI(TAG, "UI: %s (%s)", s_ui_redesign ? "Redesign" : "Classic",
+             s_ui_redesign ? "portrait" : "landscape");
     board_init(&cfg, &lvgl_disp, &lvgl_touch_indev);
 
     /* Route glyph bitmaps + draw-buf masks to PSRAM BEFORE set_display() (which
@@ -144,7 +168,9 @@ extern "C" void init(void)
              lv_rb_psram_is_enabled() ? "enabled" : "disabled");
 
     /* Select the display profile that matches this board's resolution.
-     * Landscape mode swaps H/V: LVGL width = V_RES, height = H_RES. */
+     * Landscape mode swaps H/V: LVGL width = V_RES, height = H_RES. The profile is
+     * keyed on the landscape panel in both UIs: the Redesign sizes itself from the
+     * live display width, not the Classic profile. */
     set_display(BOARD_LCD_V_RES, BOARD_LCD_H_RES);
 
     /* Start the native overlay manager's dispatcher lv_timer now that the LVGL
@@ -440,4 +466,21 @@ extern "C" void dm_display_size(int *width, int *height)
     if (height) {
         *height = profile.height;
     }
+}
+
+/* easyuxd Redesign: run the compiled-in clickable prototype. Touch and navigation
+ * then run entirely in the LVGL task; the caller just keeps the VM alive. Returns
+ * an error string, or NULL on success. */
+extern "C" bool dm_ui_redesign(void)
+{
+    return s_ui_redesign;
+}
+
+extern "C" const char *dm_redesign_start(void)
+{
+    if (!s_ui_redesign) return "Redesign UI not selected (landscape boot); see tools/set_ui.py";
+    if (!lvgl_port_lock(0)) return "display lock unavailable";
+    int ok = redesign_start_embedded();
+    lvgl_port_unlock();
+    return ok ? NULL : "Redesign prototype failed to load";
 }

@@ -32,6 +32,21 @@ import sys
 sys.path.insert(0, '/overlay')
 import time
 print('[boot-ms] main.py start:', time.ticks_ms())
+# easyuxd Redesign: when this boot selected the Redesign UI (NVS seedsigner/ui = 1,
+# set by tools/set_ui.py), run the compiled-in clickable prototype instead of the
+# app. It lives in the LVGL task; this loop only keeps the VM alive. Ctrl-C at the
+# REPL still breaks in.
+import _seedsigner_lvgl_screens as _ss
+if _ss.ui_redesign():
+    try:
+        _ss.redesign_start()
+        print('[main] Redesign prototype running (tools/set_ui.py classic switches back).')
+        while True:
+            time.sleep(1)
+    except Exception as e:
+        sys.print_exception(e)
+        print('[main] Redesign prototype failed; dropping to REPL.')
+    raise SystemExit
 try:
     from seedsigner.controller import Controller
     print('[boot-ms] controller import done:', time.ticks_ms())
