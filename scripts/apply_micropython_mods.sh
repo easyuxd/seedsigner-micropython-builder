@@ -48,6 +48,15 @@ done
 echo "Applying new file overlay from: $NEW_DIR"
 rsync -a "$NEW_DIR/" "$MP_DIR/"
 
+# MP_PATCH_NO_COMMIT=1 (set by scripts/native_build.sh) leaves the patch applied but
+# uncommitted. A host checkout may enforce a committer identity per folder, which the
+# throwaway commit below (builder@localhost) would violate; a one-shot build doesn't
+# need the commit, and native_build.sh restores the clean tree when it exits.
+if [ "${MP_PATCH_NO_COMMIT:-0}" = "1" ]; then
+  echo "Done. Patch applied (uncommitted; MP_PATCH_NO_COMMIT=1)."
+  exit 0
+fi
+
 # Commit the patch result so developer changes are cleanly separated.
 # `git diff` will show only dev changes; `git diff HEAD~1` shows the full patch.
 git add -A -- ':!lib/'

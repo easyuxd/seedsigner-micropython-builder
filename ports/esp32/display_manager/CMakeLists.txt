@@ -8,6 +8,7 @@ list(APPEND component_requires
     "lvgl"
     "seedsigner"
     "esp_hw_support"   # esp_ldo_regulator.h — power the P4 SD card VDD rail
+    "nvs_flash"        # the boot-time UI choice (Classic / easyuxd Redesign)
 )
 
 idf_component_register(

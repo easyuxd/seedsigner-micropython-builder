@@ -4,6 +4,8 @@ Build orchestration repo for SeedSigner MicroPython firmware without maintaining
 
 **Just want to put SeedSigner on a board?** Go to [Flash a prebuilt image](#flash-a-prebuilt-image).
 
+> **easyuxd fork.** Images built from this fork also contain the easyuxd **Redesign**: a portrait, touch-first clickable prototype. Switch a flashed board between Classic and Redesign with `python3 tools/set_ui.py redesign|classic` (no reflash), and build without Docker with `scripts/native_build.sh`. See [docs/native-build.md](docs/native-build.md).
+
 ## Supported hardware
 
 | Board | Manufacturer | Screen | Price | Status |

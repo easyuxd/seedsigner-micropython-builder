@@ -278,6 +278,23 @@ static mp_obj_t mp_seedsigner_lvgl_screensaver_screen(void) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(seedsigner_lvgl_screensaver_screen_obj, mp_seedsigner_lvgl_screensaver_screen);
 
+// easyuxd Redesign prototype: ui_redesign() says whether this boot selected it (NVS
+// "seedsigner"/"ui" = 1, portrait); redesign_start() shows it. The prototype then
+// runs in the LVGL task; the launcher just keeps the VM alive.
+static mp_obj_t mp_seedsigner_lvgl_ui_redesign(void) {
+    return mp_obj_new_bool(dm_ui_redesign());
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(seedsigner_lvgl_ui_redesign_obj, mp_seedsigner_lvgl_ui_redesign);
+
+static mp_obj_t mp_seedsigner_lvgl_redesign_start(void) {
+    const char *err = dm_redesign_start();
+    if (err) {
+        mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("%s"), err);
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(seedsigner_lvgl_redesign_start_obj, mp_seedsigner_lvgl_redesign_start);
+
 static mp_obj_t mp_seedsigner_lvgl_button_list_screen(size_t n_args, const mp_obj_t *args) {
     // Pass JSON through mostly unchanged and let screen-side C++ validate.
     return run_cfg_screen(button_list_screen, "button_list_screen", n_args, args);
@@ -1079,6 +1096,8 @@ static const mp_rom_map_elem_t seedsigner_lvgl_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_opening_splash_screen), MP_ROM_PTR(&seedsigner_lvgl_opening_splash_screen_obj) },
     { MP_ROM_QSTR(MP_QSTR_version_screen), MP_ROM_PTR(&seedsigner_lvgl_version_screen_obj) },
     { MP_ROM_QSTR(MP_QSTR_screensaver_screen), MP_ROM_PTR(&seedsigner_lvgl_screensaver_screen_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ui_redesign), MP_ROM_PTR(&seedsigner_lvgl_ui_redesign_obj) },
+    { MP_ROM_QSTR(MP_QSTR_redesign_start), MP_ROM_PTR(&seedsigner_lvgl_redesign_start_obj) },
     { MP_ROM_QSTR(MP_QSTR_poll_for_result), MP_ROM_PTR(&seedsigner_lvgl_poll_for_result_obj) },
     { MP_ROM_QSTR(MP_QSTR_clear_result_queue), MP_ROM_PTR(&seedsigner_lvgl_clear_result_queue_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem_stats), MP_ROM_PTR(&seedsigner_lvgl_mem_stats_obj) },
