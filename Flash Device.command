@@ -34,7 +34,7 @@ if [ -z "$port" ]; then
 fi
 
 # 2. Identify it.
-say "Checking the board on $port…"
+say "Checking the board on ${port}…"
 info="$(esptool -p "$port" flash-id 2>&1)" || die "Couldn't talk to the board:
 $info
 
