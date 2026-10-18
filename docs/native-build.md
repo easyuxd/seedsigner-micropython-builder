@@ -43,3 +43,16 @@ BOARD=WAVESHARE_ESP32_P4_WIFI6_TOUCH_LCD_35 BOARD_VARIANT=PRE_REV3 scripts/nativ
 - It never touches global git config. (The Docker flow sets `safe.directory` inside its container.)
 
 A first build compiles everything; later builds are incremental.
+
+## Flash a board (double-click)
+
+Plug the board in by its **UART** USB-C port and double-click **`Flash Device.command`** (if macOS blocks it: right-click › Open › Open). It:
+
+1. finds the board and reads its chip revision and flash size, then picks the image: chip v1.x → `PRE_REV3`; 16 MB flash → 3.5″, 32 MB → 4.3″;
+2. builds that image if it isn't built yet, or offers a fresh build if it is;
+3. asks before flashing (about 4 minutes), then flashes;
+4. asks which UI to boot (Redesign, Classic, or keep the current one) and sets it with `set_ui.py`.
+
+It needs esptool in `~/esptool-venv` (`python3 -m venv ~/esptool-venv && ~/esptool-venv/bin/pip install --upgrade esptool`) and, to build, the ESP-IDF setup above.
+
+The build uses the screens in `deps/seedsigner-lvgl-screens` (a submodule), so Redesign changes reach a board once they are in that checkout.
